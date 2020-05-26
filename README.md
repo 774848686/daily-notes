@@ -1,2 +1,3 @@
 # daily-notes
-write down some notes for myself  
+记录一些每天自己在工作中遇到的问题，以及自己学习到的一些新的知识；
+## [vue系列]
