@@ -6,6 +6,7 @@
 ## [vue系列](https://github.com/774848686/daily-notes/labels/Vue)
 
 - [动态组件以及异步组件](https://github.com/774848686/daily-notes/issues/1)
+- [说说响应式原理中哪些让你"卧槽"的知识点](https://github.com/774848686/daily-notes/issues/4)
 
 ## [CSS系列](https://github.com/774848686/daily-notes/labels/CSS)
 
