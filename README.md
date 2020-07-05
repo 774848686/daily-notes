@@ -8,7 +8,10 @@
 - [动态组件以及异步组件](https://github.com/774848686/daily-notes/issues/1)
 - [说说响应式原理中哪些让你"卧槽"的知识点](https://github.com/774848686/daily-notes/issues/4)
 
-## [CSS系列](https://github.com/774848686/daily-notes/labels/CSS)
+## [css系列](https://github.com/774848686/daily-notes/labels/CSS)
 
 - [CheckBox样式修改的两种实现方法](https://github.com/774848686/daily-notes/issues/2)
 - [styled-components 基本用法介绍](https://github.com/774848686/daily-notes/issues/3)
+
+## [面试题系列](https://github.com/774848686/daily-notes/labels/Interview)
+- [Vue中的一些面试题](https://github.com/774848686/daily-notes/issues/5)
