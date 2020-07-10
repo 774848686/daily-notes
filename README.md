@@ -13,5 +13,9 @@
 - [CheckBox样式修改的两种实现方法](https://github.com/774848686/daily-notes/issues/2)
 - [styled-components 基本用法介绍](https://github.com/774848686/daily-notes/issues/3)
 
+## [element-ui系列](https://github.com/774848686/daily-notes/labels/ElementUI)
+
+- [element-ui 如何自定义主题](https://github.com/774848686/daily-notes/issues/6)
+
 ## [面试题系列](https://github.com/774848686/daily-notes/labels/Interview)
 - [Vue中的一些面试题](https://github.com/774848686/daily-notes/issues/5)
