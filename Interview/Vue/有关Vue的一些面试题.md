@@ -79,3 +79,97 @@ function protoAugment (target, src: Object) {
 ...
 ```
 通过进行原型链的拦截，我们给每次添加的值进行响应式然后手动触发更新；Vue中的`Vue.$set`、`Vue.$delete`实现的原理也就是通过数组的`splice`进行实现；
+
+- 说一说Vue中的watch
+1. 首先说下什么是`watch`，就是一个响应式数据的监听器，一旦监听的数据发生变化，就会触发回调函数进而做一些复杂的逻辑处理；
+
+2. 具体的用法如下：
+```js
+...
+let app = new Vue({
+    el: '#root',
+    data() {
+        return {
+            msg: 'hello world'
+        }
+    },
+    created() {
+
+    },
+    methods: {
+        changeMsg() {
+            this.msg = 'hello world!'
+        }
+    },
+    watch: {
+        msg(value) {
+            console.log('value change', value)
+        }
+    }
+})
+...
+```
+还有一些高级点的用法：比如是否立即执行`immediate:true`,是否进行深度监听`deep:true`; 这里就不赘述，可以去官网查看；
+
+3. 实现原理<br/>
+首先`Vue` 在初始化`initState`方法的时候进行检测是否有用户写的`watch`,如果有则进入`initWatch`方法；
+```js
+function initState(vm){
+  ...
+   if (opts.watch && opts.watch !== nativeWatch) {
+      initWatch(vm, opts.watch);
+    }
+  ...
+}
+```
+在`initWatch`方法中，对`opts.watch`进行遍历创建`watcher`;调用了`createWatcher(vm, key, handler)`
+```js
+function createWatcher(vm, key, handler){
+  ...
+  return vm.$watch(expOrFn, handler, options)
+}
+```
+好了最终我们通过`vm.$watch`揭开了`watch`的神秘面纱；其实就是一个`watcher`.不过这里的`watcher`被标记为用户`watcher`,`user:true`;这里还有个逻辑就是`options.immediate=true`,这就是上述高级用法中立即执行的实现逻辑；
+```js
+Vue.prototype.$watch = function (
+      expOrFn,
+      cb,
+      options
+    ) {
+      var vm = this;
+    ...
+      options = options || {};
+      options.user = true;
+      var watcher = new Watcher(vm, expOrFn, cb, options);
+      if (options.immediate) {
+        try {
+          cb.call(vm, watcher.value);
+        } catch (error) {
+          handleError(error, vm, ("callback for immediate watcher \"" + (watcher.expression) + "\""));
+        }
+      }
+      ...
+    };
+```
+提到`watcher`我们很容易想到的就是进行依赖收集，形成依赖跟`watcher`相互绑定关系；那么如何进行依赖收集呢？让我们再次回到`watcher.js`中看看`Vue`对`watch`的处理.<br/>
+在`watcher`初始化中，有一段处理`watch`表达式的逻辑：
+```js
+if (typeof expOrFn === 'function') { // 就是 render 函数
+      this.getter = expOrFn
+    } else {
+      this.getter = parsePath(expOrFn)
+      if (!this.getter) {
+        this.getter = noop
+        process.env.NODE_ENV !== 'production' && warn(
+          `Failed watching path: "${expOrFn}" ` +
+          'Watcher only accepts simple dot-delimited paths. ' +
+          'For full control, use a function instead.',
+          vm
+        )
+      }
+}
+```
+有前面可知`watch`传过来的`expOrFn`是一个字符串`key`值，所以会走`parsePath(expOrFn)`方法，这里利用了函数柯里化的技巧返回了一个函数；接着初始化做重要的一件事调用`this.get()`方法；这个方法就是会进行`this.getter`方法出发，如果是渲染`watcher`则进行视图更新，如果是用户`watcher`则进行取值依赖收集；然后一旦依赖的值发生了变化就会触发各个`watcher`的`update`方法;接下来的流程就跟上述响应式流程一样了。<br/>
+好了，以上便是对`watch`的介绍
+
+
