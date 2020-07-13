@@ -169,7 +169,178 @@ if (typeof expOrFn === 'function') { // 就是 render 函数
       }
 }
 ```
-有前面可知`watch`传过来的`expOrFn`是一个字符串`key`值，所以会走`parsePath(expOrFn)`方法，这里利用了函数柯里化的技巧返回了一个函数；接着初始化做重要的一件事调用`this.get()`方法；这个方法就是会进行`this.getter`方法出发，如果是渲染`watcher`则进行视图更新，如果是用户`watcher`则进行取值依赖收集；然后一旦依赖的值发生了变化就会触发各个`watcher`的`update`方法;接下来的流程就跟上述响应式流程一样了。<br/>
+有前面可知`watch`传过来的`expOrFn`是一个字符串`key`值，所以会走`parsePath(expOrFn)`方法，这里利用了函数柯里化的技巧返回了一个函数；接着初始化做重要的一件事调用`this.get()`方法；这个方法就是会进行`this.getter`方法触发，如果是渲染`watcher`则进行视图更新，如果是用户`watcher`则进行取值依赖收集；然后一旦依赖的值发生了变化就会触发各个`watcher`的`update`方法;接下来的流程就跟上述响应式流程一样了。<br/>
 好了，以上便是对`watch`的介绍
+
+- 说一说Vue中的计算属性computed
+1. 什么是`computed`计算属性,计算属性是基于响应式数据进行缓存的，只有响应式数据发生了变化，才会进行重新计算。这样的好处是只要依赖的响应式数据不发生变化，我们就不会多次的触发所依赖的响应式数据的`get`方法;
+
+2. 具体的用法如下：
+```js
+...
+let app = new Vue({
+        el: '#root',
+        data() {
+            return {
+                msg: 'hello world'
+            }
+        },
+        computed:{
+            computedMsg(){
+                return this.msg+'!'
+            }
+        },
+        created() {
+
+        },
+        methods: {
+            changeMsg() {
+                this.msg = 'hello world!'
+            }
+        }
+    })
+...
+```
+
+3. 实现原理
+首先`Vue`初始化`initState`方法的时候进行检测时候有`computed`属性；
+```js
+function initState(vm){
+  ...
+   if (opts.computed) { initComputed(vm, opts.computed); }
+  ...
+}
+```
+在`initComputed`中做了以下几件事；1:在`Vue`实例上挂了一个`_computedWatchers`对象。2:通过遍历`computed`属性分别往`_computedWatchers`对象上添加添加计算`watcher`；并进行了计算属性的计算`defineComputed`;这里面有个小逻辑，因为我们用户手写计算属性的时候，是可以写`get`的，所以`Vue`中进行了处理；还有就是检测我们的`computed`属性是否已经存在`vm`中，然后抛出错误信息。这也是我们经常会出现的一些错误；最终得出一个小结论`computed`也是一个`watcher`;
+```js
+ function initComputed (vm, computed) {
+    // $flow-disable-line
+    var watchers = vm._computedWatchers = Object.create(null);
+    // computed properties are just getters during SSR
+    var isSSR = isServerRendering();
+
+    for (var key in computed) {
+      var userDef = computed[key];
+      var getter = typeof userDef === 'function' ? userDef : userDef.get;
+      if (getter == null) {
+        warn(
+          ("Getter is missing for computed property \"" + key + "\"."),
+          vm
+        );
+      }
+
+      if (!isSSR) {
+        // create internal watcher for the computed property.
+        watchers[key] = new Watcher(
+          vm,
+          getter || noop,
+          noop,
+          computedWatcherOptions
+        );
+      }
+
+      // component-defined computed properties are already defined on the
+      // component prototype. We only need to define computed properties defined
+      // at instantiation here.
+      if (!(key in vm)) {
+        defineComputed(vm, key, userDef);
+      } else {
+        if (key in vm.$data) {
+          warn(("The computed property \"" + key + "\" is already defined in data."), vm);
+        } else if (vm.$options.props && key in vm.$options.props) {
+          warn(("The computed property \"" + key + "\" is already defined as a prop."), vm);
+        }
+      }
+    }
+  }
+```
+既然也是一个`watcher`,那么我们还是进入`watcher.js`中看看对`computed`具体做了哪些处理；注意下在创建一个计算`watcher`的时候传入了一个`computedWatcherOptions`参数，这也是计算属性的一个关键。下面来看一下：
+```js
+ this.value = this.lazy // computedWatcherOptions 传入的
+      ? undefined
+      : this.get()
+```
+在计算`watcher`初始化中，并没有进行`this.get()`调用；然后我们进入`defineComputed`这个逻辑中；
+```js
+// 删除掉服务端渲染逻辑
+function defineComputed (
+    target,
+    key,
+    userDef
+  ) {
+    if (typeof userDef === 'function') {
+      createComputedGetter(key)
+      sharedPropertyDefinition.set = noop;
+    } else {
+      sharedPropertyDefinition.get = userDef.get
+        ? createComputedGetter(key)
+        : noop;
+      sharedPropertyDefinition.set = userDef.set || noop;
+    }
+    if (sharedPropertyDefinition.set === noop) {
+      sharedPropertyDefinition.set = function () {
+        warn(
+          ("Computed property \"" + key + "\" was assigned to but it has no setter."),
+          this
+        );
+      };
+    }
+    Object.defineProperty(target, key, sharedPropertyDefinition);
+  }
+```
+这里的主要做了一件事就是要对每个要计算的属性进行响应式处理；然后手写了`get`和`set`方法，那么我们看下`getcreateComputedGetter`:
+```js
+function createComputedGetter (key) {
+    return function computedGetter () {
+      var watcher = this._computedWatchers && this._computedWatchers[key];
+      if (watcher) {
+        if (watcher.dirty) {
+          watcher.evaluate();
+        }
+        if (Dep.target) {
+          watcher.depend();
+        }
+        return watcher.value
+      }
+    }
+  }
+```
+这里的几个东西需要我们回忆下，`_computedWatchers`、`dirty`以及`watcher.evaluate()`;首先是`_computedWatchers`就是我们的计算属性`watcher`,我们这里根据`key`拿到之前存储的`watcher`,然后因为`dirty=true`，所以会进行一次计算，这个时候就会触发`watcher`中的`get`方法：
+```js
+ evaluate () {
+    this.value = this.get()
+    this.dirty = false
+  }
+```
+这就会读取依赖`this.msg`,这里就会触发`msg`对计算`watcher`的收集；仅仅是收集计算`watcher`是不够的，我们肯定还要收集渲染`watcher`,于是Vue又进行了一次`watcher`收集:
+```js
+ if (Dep.target) {
+      watcher.depend();
+  }
+```
+为什么这样可以收集到渲染`watcher`呢？<br/>
+`watcher`的`get`方法会对`watcher`进行压栈出栈的操作，如何理解呢？首先在执行`render`函数时候会对计算属性`computedMsg`(上述例子)进行读取,调用了`get`方法，执行了`pushTarget`；此时的`targetStack`为`[渲染watcher]`,然后再进行`msg`(上述例子)收集计算`watcher`又调用了`get`方法，再次进行`pushTarget`,这时候的`targetStack`应该是`[渲染watcher，计算watcher]`，执行完`get`方法后就会调用`popTarget`；此时的`targetStack`就变成了`[渲染watcher]`;这样就能很巧妙的完成了`msg`(上述例子)对渲染`watcher`收集了。<br/>
+以上就是对`computed`计算属性的初始化分析，那又是如何根据依赖的变化而进行重新渲染的呢？<br/>
+我们已经完成了计算属性的相关依赖的收集，所以只要依赖发生了变化就会触发`计算wacther`、`渲染watcher`的更新；那问题来了，我们如何进行重新计算呢？对的，就是改掉这个`dirty`标识；我们在`计算watcher`进行`update`时候设置这个`dirty=true`:然后执行渲染`watcher`的时候进行值的更新以及视图的更新；
+```js
+update () {
+    /* istanbul ignore else */
+    if (this.lazy) {     
+      this.dirty = true
+    } else if (this.sync) {   
+      this.run()
+    } else {
+      queueWatcher(this)      
+    }
+  }
+```
+我们都知道`computed`具有缓存数据作用，主要是靠什么进行缓存的呢？<br/>
+就是靠我们的`dirty`标识，`dirty`的改变是依赖于响应数据的改变的，只要响应式数据不改变我们就不会重新计算，而是返回之前的计算值；
+
+- watch跟computed的区别<br/>
+
+首先两者都是依赖于响应式数据的，`computed`具有缓存作用，只有依赖的数据发生改变才会进行重新计算，`watch`则只要监听数据发生了变化就会触发回调函数；`watch`更加偏向于一些异步以及复杂的逻辑处理；正如官网给出的比较demo，在计算`fullName=firstName+lastname`时候，如果使用`watch`进行侦听则比较繁琐，建议还是使用`computed`;
+
+
 
 
