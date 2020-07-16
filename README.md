@@ -20,4 +20,4 @@
 ## [面试题系列](https://github.com/774848686/daily-notes/labels/Interview)
 - [Vue中的一些面试题](https://github.com/774848686/daily-notes/issues/5)
 
-## [算法题解](https://github.com/CyC2018/CS-Notes/blob/master/notes/Leetcode%20%E9%A2%98%E8%A7%A3%20-%20%E7%9B%AE%E5%BD%95.md)(转载自CyC2018)
+## [算法题解](https://github.com/CyC2018/CS-Notes/blob/master/notes/Leetcode%20%E9%A2%98%E8%A7%A3%20-%20%E7%9B%AE%E5%BD%95.md)<font size=4>(转载自CyC2018)</font>
