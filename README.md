@@ -8,6 +8,10 @@
 - [动态组件以及异步组件](https://github.com/774848686/daily-notes/issues/1)
 - [说说响应式原理中哪些让你"卧槽"的知识点](https://github.com/774848686/daily-notes/issues/4)
 
+## [JavaScript系列](https://github.com/774848686/daily-notes/labels/JS)
+
+- [异常监控](https://github.com/774848686/daily-notes/issues/8)
+
 ## [css系列](https://github.com/774848686/daily-notes/labels/CSS)
 
 - [CheckBox样式修改的两种实现方法](https://github.com/774848686/daily-notes/issues/2)
