@@ -12,6 +12,10 @@
 
 - [异常监控](https://github.com/774848686/daily-notes/issues/8)
 
+## [TypeScript系列](https://github.com/774848686/daily-notes/labels/TS)
+
+- [ts中的一些基础知识](https://github.com/774848686/daily-notes/issues/9)
+
 ## [css系列](https://github.com/774848686/daily-notes/labels/CSS)
 
 - [CheckBox样式修改的两种实现方法](https://github.com/774848686/daily-notes/issues/2)
