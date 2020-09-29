@@ -11,6 +11,7 @@
 ## [JavaScript系列](https://github.com/774848686/daily-notes/labels/JS)
 
 - [异常监控](https://github.com/774848686/daily-notes/issues/8)
+- [变量提升与函数提升](https://github.com/774848686/daily-notes/issues/10)
 
 ## [TypeScript系列](https://github.com/774848686/daily-notes/labels/TS)
 
