@@ -12,7 +12,9 @@
 
 - [异常监控](https://github.com/774848686/daily-notes/issues/8)
 - [变量提升与函数提升](https://github.com/774848686/daily-notes/issues/10)
+- [静态作用域(词法作用域)](https://github.com/774848686/daily-notes/issues/13)
 - [再谈闭包](https://github.com/774848686/daily-notes/issues/12)
+
 
 ## [TypeScript系列](https://github.com/774848686/daily-notes/labels/TS)
 
