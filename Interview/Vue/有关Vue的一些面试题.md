@@ -341,6 +341,74 @@ update () {
 
 首先两者都是依赖于响应式数据的，`computed`具有缓存作用，只有依赖的数据发生改变才会进行重新计算，`watch`则只要监听数据发生了变化就会触发回调函数；`watch`更加偏向于一些异步以及复杂的逻辑处理；正如官网给出的比较demo，在计算`fullName=firstName+lastname`时候，如果使用`watch`进行侦听则比较繁琐，建议还是使用`computed`;
 
+- `v-for` 和 `v-if`的优先级以及如何进行性能提升？
+有过Vue开发经验的小伙伴都会知道，如果你的编辑器里有这样一段代码：
+```html
+<ul>
+    <li v-for="(item,index) in 5" v-if="isExpand">
+        {{item}}
+    </li>
+</ul>
+```
+这样控制台会有一个警告，官网也有给过一个说明`永远不要把 v-if 和 v-for 同时用在同一个元素上。`;那具体的原因，官网是没有给出的，我们来看一看两种编译后的代码块，对比一下就能一目了然。
+1. 优先级比较
+```js
+if (el.staticRoot && !el.staticProcessed) {
+    return genStatic(el, state)
+  } else if (el.once && !el.onceProcessed) {
+    return genOnce(el, state)
+  } else if (el.for && !el.forProcessed) {
+    return genFor(el, state)
+  } else if (el.if && !el.ifProcessed) {
+    return genIf(el, state)
+  } else if (el.tag === 'template' && !el.slotTarget && !state.pre) {
+    return genChildren(el, state) || 'void 0'
+  } else if (el.tag === 'slot') {
+    return genSlot(el, state)
+  } else {
+    ...
+  }
+```
+从这段逻辑看for的优先级是在if前面的；
+2. 同时使用后的代码块：
+```js
+ with(this) {
+    return _c('div', {
+      attrs: {
+        "id": "app"
+      }
+    }, [_c('div', {
+      staticClass: "lists"
+    }, [_c('ul', _l((5), function (item, index) {
+      return (isExpand) ? _c('li', [_v("\n " + _s(item) + "\n")]) :
+        _e()
+    }), 0)])])
+  }
+```
+我们先忽略里面的`_c`、`_l`,`_l`逻辑就是渲染了一个列表，注意这里的逻辑是先遍历一遍然后处理`v-if`的`isExpand`三元表达式逻辑。在看一下我们另一段写发代码块；
+```js
+ <ul v-if="isExpand">
+     <li v-for="(item,index) in 5">
+          {{item}}
+     </li>
+</ul>
+```
+编译后的代码如下：
+```js
+ with(this) {
+    return _c('div', {
+      attrs: {
+        "id": "app"
+      }
+    }, [_c('div', {
+      staticClass: "lists"
+    }, [(isExpand) ? _c('ul', _l((5), function (item, index) {
+      return _c('li', [_v("\n                    " + _s(item) + "\n                ")])
+    }), 0) : _e()])])
+  }
+```
+从这段逻辑可以看出，我们是先进行三元表达式的计算。当结果是true的时候就进行了列表的渲染；所以把`v-if`写在`v-for`上层能够带来一定的性能优化。
+
 
 
 
