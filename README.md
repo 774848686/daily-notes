@@ -26,6 +26,7 @@
 - [CheckBox样式修改的两种实现方法](https://github.com/774848686/daily-notes/issues/2)
 - [styled-components 基本用法介绍](https://github.com/774848686/daily-notes/issues/3)
 - [steps 跳跃函数](https://github.com/774848686/daily-notes/issues/11)
+- [BFC小记](https://github.com/774848686/daily-notes/issues/15)
 
 ## [element-ui系列](https://github.com/774848686/daily-notes/labels/ElementUI)
 
