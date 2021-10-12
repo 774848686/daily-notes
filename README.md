@@ -15,6 +15,7 @@
 - [静态作用域(词法作用域)](https://github.com/774848686/daily-notes/issues/13)
 - [再谈闭包](https://github.com/774848686/daily-notes/issues/12)
 - [手写call、apply、bind函数](https://github.com/774848686/daily-notes/issues/14)
+- [New 操作符到底做了什么？](https://github.com/774848686/daily-notes/issues/16)
 
 
 ## [TypeScript系列](https://github.com/774848686/daily-notes/labels/TS)
