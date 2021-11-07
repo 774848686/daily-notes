@@ -16,6 +16,7 @@
 - [再谈闭包](https://github.com/774848686/daily-notes/issues/12)
 - [手写call、apply、bind函数](https://github.com/774848686/daily-notes/issues/14)
 - [New 操作符到底做了什么？](https://github.com/774848686/daily-notes/issues/16)
+- [lodash 中一些源码自行实现](https://github.com/774848686/daily-notes/issues/17)
 
 
 ## [TypeScript系列](https://github.com/774848686/daily-notes/labels/TS)
@@ -32,7 +33,7 @@
 ## [element-ui系列](https://github.com/774848686/daily-notes/labels/ElementUI)
 
 - [element-ui 如何自定义主题](https://github.com/774848686/daily-notes/issues/6)
-
+- [element-ui Radio 组件的实现](https://github.com/774848686/daily-notes/issues/18)
 ## [面试题系列](https://github.com/774848686/daily-notes/labels/Interview)
 - [Vue中的一些面试题](https://github.com/774848686/daily-notes/issues/5)
 - [JS中的一些面试题](https://github.com/774848686/daily-notes/issues/7)
