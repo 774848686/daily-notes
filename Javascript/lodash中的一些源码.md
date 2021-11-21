@@ -1,4 +1,4 @@
-#### lodash 中一些源码自行实现
+#### lodash 中一些源码实现
 - _.slice 
 ```js
 /* var array = [1, 2, 3, 4]
@@ -140,4 +140,96 @@ function _flattenDeep(array){
     const INFINITY = 1 / 0
     return Array.isArray(array) ? baseFlatten(array, INFINITY) : [];
 }
+```
+- _.difference()
+```js
+/**
+ * _.difference([3, 2, 1], [4, 2]);
+ * => [3, 1]
+ */
+// function _difference(array,values){
+//     return array.filter(item=>!values.includes(item))
+// }
+function _difference(array, values) {
+    return baseDifference(array, values)
+}
+
+function baseDifference(array, values, iteratee) {
+    let index = -1,
+        result = [],
+        length = array.length,
+        valuesLength = values.length;
+    if (iteratee) {
+        values = arrayMap(values, iteratee);
+    }
+    outer:
+        while (++index < length) {
+            var value = array[index],
+                computed = iteratee ? iteratee(value) : value;
+
+            if (computed === computed) {
+                var valuesIndex = valuesLength;
+                while (valuesIndex--) {
+                    if (values[valuesIndex] === computed) {
+                        continue outer;
+                    }
+                }
+            }
+            result.push(value);
+        }
+    return result;
+
+}
+// console.log(_difference([3, 2, 1, 2, 5], [4, 2]));
+/**
+ * _.differenceBy([3.1, 2.2, 1.3], [4.4, 2.5], Math.floor);
+ * => [3.1, 1.3]
+ */
+function arrayMap(array, iteratee) {
+    var index = -1,
+        length = array.length,
+        result = Array(length);
+
+    while (++index < length) {
+        result[index] = iteratee(array[index]);
+    }
+    return result;
+}
+
+function baseProperty(key) {
+    return function (object) {
+        return object == null ? undefined : object[key];
+    };
+}
+
+function baseIteratee(value) {
+    var type = typeof value;
+    if (type == 'function') {
+        return value;
+    }
+    if (value == null) {
+        return identity;
+    }
+    return baseProperty(value);
+}
+
+function getIteratee() {
+    var result = baseIteratee;
+    return arguments.length ? result(arguments[0], arguments[1]) : result;
+}
+
+function _differenceBy(array, values, iteratee) {
+    return baseDifference(array, values, getIteratee(iteratee))
+}
+console.log(_differenceBy([{
+    'x': 2
+}, {
+    'x': 1
+}], [{
+    'x': 1
+}], 'x'))
+console.log(_differenceBy([3.1, 2.2, 1.3], [4.4, 2.5], Math.floor))
+console.log(_differenceBy([5, 10, 11], [20], function (a1) {
+    return a1 % 5;
+}))
 ```
