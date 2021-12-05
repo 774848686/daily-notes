@@ -34,6 +34,7 @@
 
 - [element-ui 如何自定义主题](https://github.com/774848686/daily-notes/issues/6)
 - [element-ui Radio 组件的实现](https://github.com/774848686/daily-notes/issues/18)
+- [Element-ui Layout布局 Row、Col组件的实现](https://github.com/774848686/daily-notes/issues/19)
 ## [面试题系列](https://github.com/774848686/daily-notes/labels/Interview)
 - [Vue中的一些面试题](https://github.com/774848686/daily-notes/issues/5)
 - [JS中的一些面试题](https://github.com/774848686/daily-notes/issues/7)
