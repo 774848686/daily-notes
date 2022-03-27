@@ -1,5 +1,6 @@
 > 你好，我是本次的面试官，我想问你一些关于JavaScript中面试题目，
 - 你给我讲一下什么是原型么？ 
+
 每个构造函数都会有一个`prototype`属性，这个属性指向了一个原型对象。原型对象里面会有一个`construtor`属性指向这个构造函数；每个对象可通过`_proto_`指向对象原型。举个例子：
 ```js
 function Persion(){
@@ -105,7 +106,8 @@ var child1 = new Child('kevin', '18');
 console.log(child1);
 ```
 JavaScript高级程序设计中这么评价寄生组合式继承：这种方式的高效率体现它只调用了一次 Parent 构造函数，并且因此避免了在 Parent.prototype 上面创建不必要的、多余的属性。与此同时，原型链还能保持不变；因此，还能够正常使用 instanceof 和 isPrototypeOf。开发人员普遍认为寄生组合式继承是引用类型最理想的继承范式。
-- 您能说说new操作符发生了什么吗？
+- 你能说说new操作符发生了什么吗？
+  
 用几句话概括就是：1.创建了一个新的对象；2.将这个对象的原型指向了函数的prototype属性；3.执行了函数内方法以及绑定了this到这个对象；4.返回这个对象；具体的实现如下：
 ```js
 function _new(){
@@ -121,4 +123,173 @@ function _new(){
 }
 ```
 补充的是，如果构造函数返回的是一个对象或者一个函数的时候，这时候new 返回的并不是一个创建对象而是构造函数返回的对象；
+- 你能解释一下什么是作用域吗？
+简单的说，作用域就是一个可访问变量的集合。当代吗执行的时候，就会创建一个执行上下文，当访问一个变量的时候，他首先会在当前的执行环境进行查找，当找不到的时候会沿着父级执行上下文一层层往上查找。这样的多个执行上下文的变量对象组合成了作用域链。
+<br>每个执行上下文，都会有三个重要的属性：
+1. 变量对象(VO)
+2. 作用域链(Scope chain)
+3. this
+<br>举个例子:
+
+```js
+var scope = "global scope";
+function checkscope(){
+    var scope2 = 'local scope';
+    return scope2;
+}
+checkscope();
+```
+执行过程如下：
+1. `checkscope`函数被创建，保存作用域链到内部属性[[scope]]
+```js
+checkscope.[[scope]] = [
+    globalContext.VO
+]
+```
+2. 执行`checkscope`函数，创建执行函数的上下文被压入执行上下文栈：// 先进后出
+```js
+ECStack = [
+    checkscopeContext,
+    globalContext
+];
+```
+3. `checkscope`函数不会立即执行，而是要进行执行前的准备，复制函数[[scope]]属性创建作用域。
+```js
+checkscopeContext = {
+    Scope:checkscope.[[scope]],
+}
+```
+4. 创建活动变量对象，比如初始化实参、形参变量声明以及函数声明；
+```js
+checkscopeContext = {
+    Scope:checkscope.[[scope]],
+    VO:{
+        arguments: {
+            length: 0
+        },
+        scope2:undefined
+    }
+}
+```
+5. 将该活动对象压入作用域链顶端：
+```js
+checkscopeContext = {
+    VO:{
+        arguments: {
+            length: 0
+        },
+        scope2:undefined
+    },
+    Scope:[AO,[[scope]]]
+}
+```
+6. 准备工作做完，开始执行函数，随着函数的执行，修改 AO 的属性值
+```js
+checkscopeContext = {
+    VO:{
+        arguments: {
+            length: 0
+        },
+        scope2:'local scope'
+    },
+    Scope:[AO,[[scope]]]
+}
+```
+7. 查找到 `scope2` 的值，返回后函数执行完毕，函数上下文从执行上下文栈中出栈
+```js
+ECStack = [
+    globalContext
+];
+```
+综上代码执行时候，就是一个反复压栈出栈的过程。<font color=red>这里闭包的的产生的具体原因就是返回函数的`Scope`保存了对父级执行函数的AO引用，虽然父级函数上下文已经出栈，但是js对其AO进行了保存。</font>
+<br> 我们再来看看什么叫做执行上下文：<br>
+我们代码在执行的时候，都是自上而下运行。由上我们知道当一个函数执行时候就会创建执行上下文，那么多的执行上下文是如何进行管理的呢？JavaScript引擎创建了执行上下文栈（Execution context stack，ECS）来管理执行上下文；我们可以把这个执行上下文栈当做一个数组，遇到函数执行就把创建的执行上下文进行压栈。首先遇到的是全局代码，向栈中压入 `globalContext`
+
+```js
+ECStack = [
+    globalContext
+];
+```
+举个例子：
+```js
+var scope = "global scope";
+function checkscope(){
+    var scope = "local scope";
+    function f(){
+        return scope;
+    }
+    return f();
+}
+checkscope();
+```
+这段代码的执行过程是这样的：
+
+```js
+ECStack.push(<checkscope> functionContext);
+ECStack.push(<f> functionContext);
+ECStack.pop();
+ECStack.pop();
+```
+我们再来看看什么叫做变量对象：<br>
+举个例子：
+```js
+function foo(a) {
+  var b = 2;
+  function c() {}
+  var d = function() {};
+
+  b = 3;
+
+}
+
+foo(1);
+```
+当前执行上下文的准备阶段AO如下：
+```js
+fooScopeContext = {
+    AO:{
+        arguments:{
+            length:1
+        },
+        a:1,
+        b:undefined,
+        c:reference to function c(){},
+        d: undefined
+    }
+}
+```
+执行上下文变成：
+```js
+fooScopeContext = {
+    AO:{
+        arguments:{
+            length:1
+        },
+        a:1,
+        b:3,
+        c:reference to function c(){},
+        d: reference to FunctionExpression "d"
+    }
+}
+```
+有趣的一道理解题：
+```js
+function foo() {
+    console.log(a);
+    a = 1;
+}
+
+foo(); // ???
+
+function bar() {
+    a = 1;
+    console.log(a);
+}
+bar(); // ???
+```
+第一题因为没有`var`,所以a不会放到AO中，所以打印不出a。报错<font color=red>Uncaught ReferenceError: a is not defined</font>,第二题会创建一个全局a，所以能够打印出来。
+
+
+
+
   
