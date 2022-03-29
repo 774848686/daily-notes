@@ -288,6 +288,23 @@ function bar() {
 bar(); // ???
 ```
 第一题因为没有`var`,所以a不会放到AO中，所以打印不出a。报错<font color=red>Uncaught ReferenceError: a is not defined</font>,第二题会创建一个全局a，所以能够打印出来。
+- 你能说下`instanceof`操作符的实现原理么？
+`instanceof`是判断实例`_proto_`是否是指向函数原型或者指向函数父级往上原型对象。
+```js
+function instanceof(leftSource,rightTarget){
+    let rightPrototype = rightTarget.prototype;
+    let leftProto = leftSource._proto_;
+    while(true){
+        if(leftProto ==null){
+            return false;
+        }
+        if(leftProto===rightPrototype){
+            return true;
+        }
+        leftProto = leftProto._proto_
+    }
+}
+```
 
 
 
